@@ -3,98 +3,172 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>无标题文档</title>
-<script>
-	location="https://www.baidu.com/";
-</script>
-</head>
-
 <style>
 	body {
 		margin:0px;
 		padding:0px;
 	}
-	#frame {
-		width:1024px;
-		margin:0px auto;
-	}
 	
-	#stage {
-		perspective:1000px;
-		background-color:pink;
-		width:400px;
-		margin:0px auto;
-		padding-top:100px;
-		height:400px;
-	}
-
-	#box {
-		margin:100px auto;
-		padding-top:100px;
-		transform-style:preserve-3d;
-		transition:transform 2s;
-		background-color:black;
-		width:0px;
-		transform:rotateX(-30deg) rotateY(-30deg);
-	}
-	
-	#box:hover{
-		transform:rotateX(-30deg) rotateY(30deg) rotateZ(90deg);
-	}
-	
-	#box>div {
+	#page {
 		position:absolute;
-		background-color:rgba(255,50,0,.1);
+		width:100%;
+		height:100%;
+		background-color:green;
+		margin:auto;
+	}
+	
+	#user {
+		width:100px;
+		height:100px;
+	}
+	
+	#suspend {
 		border:1px solid;
-		width:200px;
-		height:200px;
-		font-size:80px;
+		width:60px;
+		height:20px;
 		text-align:center;
-		line-height:200px;
-	}
-	
-	#one {
-		transform:translateZ(100px);
-	}
-	
-	#two {
-		transform:rotateX(90deg) translateZ(100px);
-	}
-	
-	#three {
-		transform:rotateY(90deg) translateZ(100px);
-	}
-	
-	#four {
-		transform:rotateX(-90deg) translateZ(100px);
-	}
-	
-	#five {
-		transform:rotateY(-90deg) translateZ(100px);
-	}
-	
-	#six {
-		transform:rotateY(180deg) translateZ(100px);
+		position:fixed;
+		right:0px;
+		top:100px;
 	}
 </style>
+<script>
+	var dragging = false;
+	var mouseY;
+	var mouseX;
+	
+	onmousedown = function(){
+		event.returnValue = false;
+	};
+	
+	function down(event){
+		event = event || window.event;
+		dragging = true;
+		mouseX = parseInt(event.clientX);
+		mouseY = parseInt(event.clientY);
+		objY = parseInt(user.style.top);
+		objX = parseInt(user.style.left);
+	}
+	
+	function move(event){
+		event = event || window.event;
+		if(dragging == true){
+			var x,y;
+			y = event.clientY - mouseY + objY;
+			x = event.clientX - mouseX + objX;
+			user.style.top = y + "px";
+			user.style.left = x + "px";
+		}
+	}
+	
+	function up(){
+		dragging = false;
+	}
+	
+	function tgMove(tg){
+		if(tg.offsetTop>=510){
+			window.clearInterval(tg.id);
+			page.removeChild(tg);
+			location = "beDefeated.html";
+		}else{
+			tg.style.top = tg.offsetTop+1+"px";
+		}
+	}
+	
+	function setTarget(){
+		var tg = document.createElement("div");
+		tg.innerText = Math.ceil(Math.random()*10);
+		page.appendChild(tg);
+		tg.className = "target";
+		tg.style.textAlign = "center";
+		tg.style.fontSize = "60px";
+		tg.style.position = "absolute";
+		tg.style.backgroundColor = "yellow";
+		tg.style.width = "100px";
+		tg.style.height = tg.style.width;
+		tg.style.lineHeight = tg.style.height;
+		tg.style.left = Math.floor(Math.random()*1250)+"px";
+		
+		tg.id = setInterval(function(){tgMove(tg);},10);
+	}
+	
+	function validate(zd,tg){
+		var zdTop = zd.offsetTop;
+		var zdLeft = zd.offsetLeft;
+		var tgTop = tg.offsetTop;
+		var tgLeft = tg.offsetLeft;
+		if(zdTop<=tgTop+90&&zdTop>=tgTop-10&&zdLeft>=tgLeft-10&&zdLeft<=tgLeft+90){
+			if(Number(tg.innerText)<2){
+				clearInterval(tg.id);
+				page.removeChild(tg);
+			}else{
+				tg.innerText = Number(tg.innerText)-1;
+			}
+			clearInterval(zd.id);
+			page.removeChild(zd);
+		}
+	}
+	
+	function zdMove(zd){
+		if(zd.offsetTop<=0){
+			clearInterval(zd.id);
+			page.removeChild(zd);
+			return;
+		}else{
+			zd.style.top = zd.offsetTop-2+"px";
+		}
+		
+		var tgs = document.getElementsByClassName("target");
+		for(var i=0;i<tgs.length;i++){
+			validate(zd,tgs[i]);
+		}
+	}
+
+	function fzd(){
+		var zd = document.createElement("img");
+		page.appendChild(zd);
+		zd.className = "zd";
+		zd.src = "man.png";
+		zd.style.width = "20px";
+		zd.style.height = "20px";
+		zd.style.position = "absolute";
+		zd.style.left = user.offsetLeft+40+"px";
+		zd.style.top = user.offsetTop+"px";
+		zd.id = setInterval(function(){zdMove(zd);},1);
+	}
+	onload = function(){
+		var zdi = setInterval(fzd,100);
+		var tgi = setInterval(setTarget,1000);
+		user.onmousedown = down;
+		user.onmousemove = move;
+		onmouseup = up;
+		user.style.position = "absolute";
+		user.style.top = "450px";
+		user.style.left = "633px";
+		suspend.onclick = function(){
+			var tgs = document.getElementsByClassName("target");
+			if(this.innerText == "暂停"){
+				clearInterval(zdi);
+				clearInterval(tgi);
+				for(var i=0;i<tgs.length;){
+					clearInterval(tgs[0].id);
+					page.removeChild(tgs[0]);
+				}
+				this.innerText = "继续";
+			}else{
+				zdi = setInterval(fzd,50);
+				tgi = setInterval(setTarget,2000);
+				this.innerText = "暂停";
+			}
+		};
+	};
+</script>
+</head>
+
 <body>
-	<div id="frame">
-		<div id="stage">
-			<div id="box">
-				<div id="one">1</div>
-				<div id="two">2</div>
-				<div id="three">3</div>
-				<div id="four">4</div>
-				<div id="five">5</div>
-				<div id="six">6</div>
-			</div>
-		</div>
+	<div id="page">
+		<img id="user" src="man.png"/>
+		<div id="suspend">暂停</div>
 	</div>
 </body>
 </html>
-
-
-
-<!doctype html/>
-<html>
-
-<html/>
